@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Clicker — Instant Play</title>
+  <style>
+    :root{
+      --bg:#0f1724; --card:#0b1220; --accent:#ffcc00; --muted:#9aa6c1; --glass: rgba(255,255,255,0.03);
+      --glass-2: rgba(255,255,255,0.02);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;color:#e6eef8;background:linear-gradient(180deg,#071020 0%,#071329 60%);}
+    .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px}
+    .card{width:100%;max-width:900px;background:linear-gradient(180deg,var(--card),#071021);border-radius:14px;padding:20px;box-shadow:0 8px 30px rgba(2,6,23,0.7);border:1px solid rgba(255,255,255,0.03);display:grid;grid-template-columns:1fr 320px;gap:18px}
+    .left{padding:18px}
+    .title{display:flex;align-items:center;gap:12px}
+    .logo{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,#ffd86b,#ff8a00);display:flex;align-items:center;justify-content:center;font-weight:800;color:#082;box-shadow:0 6px 18px rgba(255,138,0,0.12)}
+    h1{margin:0;font-size:20px}
+    p.lead{margin:6px 0 16px;color:var(--muted);font-size:13px}
+
+    .counter{display:flex;align-items:center;gap:12px;background:var(--glass);padding:18px;border-radius:12px;margin-bottom:18px}
+    .value{font-size:34px;font-weight:700}
+    .subtitle{color:var(--muted);font-size:13px}
+
+    .big-btn{width:100%;height:160px;border-radius:12px;background:linear-gradient(180deg,#ffd86b,#ff9c2e);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;color:#082;cursor:pointer;user-select:none;box-shadow:0 8px 30px rgba(255,154,0,0.12);border:0;transition:transform .08s ease}
+    .big-btn:active{transform:scale(0.98)}
+
+    .upgrades{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+    .card-up{background:var(--glass-2);padding:12px;border-radius:10px;display:flex;align-items:center;justify-content:space-between}
+    .card-up .left-up{display:flex;flex-direction:column}
+    .small{font-size:12px;color:var(--muted)}
+    .buy{background:linear-gradient(180deg,#0ea5a4,#0b948a);color:white;padding:8px 10px;border-radius:8px;border:0;cursor:pointer}
+
+    .right{padding:18px;border-left:1px solid rgba(255,255,255,0.02)}
+    .panel{background:var(--glass);padding:12px;border-radius:10px;margin-bottom:12px}
+    .muted{color:var(--muted);font-size:13px}
+
+    .footer{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-top:12px}
+    .small-btn{background:transparent;border:1px solid rgba(255,255,255,0.04);padding:8px 10px;border-radius:8px;color:var(--muted);cursor:pointer}
+
+    .floating{position:fixed;right:22px;bottom:22px;background:#061727;color:#fff;padding:10px 12px;border-radius:999px;font-weight:700;border:1px solid rgba(255,255,255,0.04)}
+
+    @media (max-width:900px){.card{grid-template-columns:1fr;}.right{border-left:0;border-top:1px solid rgba(255,255,255,0.02)}}
+
+    .pop{position:absolute;transform:translate(-50%,-50%);pointer-events:none;font-weight:800;color:#fff;text-shadow:0 0 5px rgba(0,0,0,0.5)}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card" role="application" aria-label="Clicker game">
+      <div class="left">
+        <div class="title">
+          <div class="logo">CR</div>
+          <div>
+            <h1>Clicker — Instant Play</h1>
+            <p class="lead">Click the big button to earn coins. Buy upgrades, auto-clickers, and multipliers. Progress saves automatically.</p>
+          </div>
+        </div>
+
+        <div class="counter" aria-live="polite">
+          <div>
+            <div class="value" id="coins">0</div>
+            <div class="subtitle">Coins</div>
+          </div>
+          <div style="margin-left:auto;text-align:right">
+            <div class="muted">CPS <strong id="cps">0</strong></div>
+            <div class="muted">Per Click <strong id="perClick">1</strong></div>
+          </div>
+        </div>
+
+        <div style="position:relative">
+          <button id="clickBtn" class="big-btn" aria-label="Main click button">CLICK!</button>
+        </div>
+
+        <div class="upgrades">
+          <div class="card-up">
+            <div class="left-up">
+              <strong>Auto Clicker</strong>
+              <span class="small">Clicks for you every second</span>
+            </div>
+            <button class="buy" id="buyAuto">Buy (50)</button>
+          </div>
+          <div class="card-up">
+            <div class="left-up">
+              <strong>Multiplier</strong>
+              <span class="small">Doubles coins per click</span>
+            </div>
+            <button class="buy" id="buyMulti">Buy (100)</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="right">
+        <div class="panel">
+          <strong>Stats</strong>
+          <p class="muted">Total Clicks: <span id="totalClicks">0</span></p>
+          <p class="muted">Auto Clickers: <span id="autoCount">0</span></p>
+          <p class="muted">Multiplier: <span id="multiLevel">1x</span></p>
+        </div>
+        <div class="footer">
+          <button class="small-btn" id="reset">Reset Game</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    let coins = parseInt(localStorage.getItem('coins')) || 0;
+    let perClick = parseInt(localStorage.getItem('perClick')) || 1;
+    let cps = parseInt(localStorage.getItem('cps')) || 0;
+    let autoCount = parseInt(localStorage.getItem('autoCount')) || 0;
+    let multiLevel = parseInt(localStorage.getItem('multiLevel')) || 1;
+    let totalClicks = parseInt(localStorage.getItem('totalClicks')) || 0;
+
+    const coinsEl = document.getElementById('coins');
+    const cpsEl = document.getElementById('cps');
+    const perClickEl = document.getElementById('perClick');
+    const totalClicksEl = document.getElementById('totalClicks');
+    const autoCountEl = document.getElementById('autoCount');
+    const multiLevelEl = document.getElementById('multiLevel');
+
+    const updateDisplay = () => {
+      coinsEl.textContent = Math.floor(coins);
+      cpsEl.textContent = cps;
+      perClickEl.textContent = perClick;
+      totalClicksEl.textContent = totalClicks;
+      autoCountEl.textContent = autoCount;
+      multiLevelEl.textContent = multiLevel + 'x';
+    };
+
+    const saveGame = () => {
+      localStorage.setItem('coins', coins);
+      localStorage.setItem('perClick', perClick);
+      localStorage.setItem('cps', cps);
+      localStorage.setItem('autoCount', autoCount);
+      localStorage.setItem('multiLevel', multiLevel);
+      localStorage.setItem('totalClicks', totalClicks);
+    };
+
+    function showPop(x, y, text) {
+      const pop = document.createElement('div');
+      pop.textContent = '+' + text;
+      pop.className = 'pop';
+      pop.style.left = x + 'px';
+      pop.style.top = y + 'px';
+      document.body.appendChild(pop);
+      pop.animate([
+        { transform: 'translate(-50%,-50%) scale(1)', opacity: 1 },
+        { transform: 'translate(-50%,-80%) scale(0.8)', opacity: 0 }
+      ], { duration: 700 });
+      setTimeout(()=>pop.remove(),700);
+    }
+
+    document.getElementById('clickBtn').addEventListener('click', e => {
+      coins += perClick;
+      totalClicks++;
+      showPop(e.clientX, e.clientY, perClick);
+      updateDisplay();
+      saveGame();
+    });
+
+    document.getElementById('buyAuto').addEventListener('click', () => {
+      if (coins >= 50) {
+        coins -= 50;
+        cps += 1;
+        autoCount++;
+        saveGame();
+        updateDisplay();
+      }
+    });
+
+    document.getElementById('buyMulti').addEventListener('click', () => {
+      if (coins >= 100) {
+        coins -= 100;
+        perClick *= 2;
+        multiLevel *= 2;
+        saveGame();
+        updateDisplay();
+      }
+    });
+
+    setInterval(() => {
+      coins += cps;
+      updateDisplay();
+      saveGame();
+    }, 1000);
+
+    document.getElementById('reset').addEventListener('click', () => {
+      if (confirm('Reset all progress?')) {
+        localStorage.clear();
+        coins = 0; perClick = 1; cps = 0; autoCount = 0; multiLevel = 1; totalClicks = 0;
+        updateDisplay();
+      }
+    });
+
+    updateDisplay();
+  </script>
+</body>
+</html>
